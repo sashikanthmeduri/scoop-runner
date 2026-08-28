@@ -1,0 +1,8 @@
+{
+  "name": "Scoop Runner",
+  "short_name": "Scoop",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10"
+}
