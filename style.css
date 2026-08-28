@@ -1,0 +1,75 @@
+:root {
+  --bg: #0b0d10;
+  --ink: #e8dcc8;
+  --amber: #f5b942;
+  --cyan: #3ee0d4;
+  --danger: #ff4d4d;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  min-height: 100%;
+  touch-action: manipulation;
+}
+#app {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 16px 12px 24px;
+  position: relative;
+}
+.masthead { text-align: left; padding: 8px 4px 12px; }
+.kicker {
+  color: var(--cyan);
+  letter-spacing: 0.28em;
+  font-size: 11px;
+}
+h1 {
+  font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+  font-size: 42px;
+  color: var(--amber);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+}
+.tag { opacity: 0.85; margin-top: 4px; }
+#game {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #12151b;
+  border: 1px solid #2a2418;
+  border-radius: 12px;
+}
+#hud {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-family: Impact, sans-serif;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+}
+.overlay {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 150px;
+  background: rgba(11, 13, 16, 0.92);
+  border: 1px solid var(--amber);
+  border-radius: 12px;
+  padding: 20px;
+}
+.overlay.hidden { display: none; }
+#overlayTitle { color: var(--amber); font-family: Impact, sans-serif; }
+#overlayCopy { margin: 10px 0 16px; line-height: 1.4; }
+button {
+  background: var(--amber);
+  color: #0b0d10;
+  border: 0;
+  padding: 12px 16px;
+  font-family: Impact, sans-serif;
+  letter-spacing: 0.08em;
+  font-size: 18px;
+  border-radius: 8px;
+  width: 100%;
+}
