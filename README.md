@@ -1,31 +1,16 @@
-# SCOOP RUNNER
+# Scoop Runner
 
-Endless journalism game built with Grok.
-
-**Chase the story. Beat the deadline.**
-
-Collect scoops. Dodge lawsuits, fake news, and deadlines.
+Arcade endless runner. You are a reporter sprinting the city for scoops.
 
 ## Play
 
-Open `index.html` in a browser (or serve the folder). Tap / click / press Space to jump.
+```bash
+npm install
+npm run dev
+```
 
-## Android / Play Store
+Open the app, hit **Play**. Check **Record my game** to tape a run. Touch: gun = Scoop-x, Jump on the right. Keyboard: Space jump, Down slide, F/J Scoop-x, G jetpack.
 
-See **ANDROID.md**. The `android/` folder wraps this game in a WebView so you can build a Play Store `.aab` in Android Studio.
+## Stack
 
-## Brand assets
-
-| File | Use |
-| --- | --- |
-| `assets/og.svg` | Open Graph / social preview (1200×630) |
-| `assets/x-banner.svg` | X header banner (1500×500) |
-| `assets/favicon.svg` | Favicon |
-| `assets/icon.svg` | App icon |
-| `site.json` | Brand + meta manifest |
-
-## Controls
-
-- **Tap / click / Space** — jump
-- Score is scoops collected
-- Best score stored in the browser
+Vite + TanStack Start, with a static `public/play.html` + `public/scoop-game.js` path so the game loads even when the module graph is slow.
