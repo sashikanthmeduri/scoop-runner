@@ -1,30 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>SCOOP RUNNER</title>
-  <meta name="theme-color" content="#0b0d10" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#12100c" />
+  <title>Scoop Runner</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Scoop Runner" />
+  <style>
+    :root { --ink:#12100c; --paper:#f3ead8; --paper-dim:#e5d9c0; --masthead:#c41e3a; --muted:#6e6658; --scoop:#d4a017; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; height:100%; background:#12100c; color:#f3ead8; font-family: Georgia, "Times New Roman", serif; }
+    #game { position:relative; height:100dvh; width:100%; overflow:hidden; background:var(--ink); }
+    canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; display:block; }
+    .top-right { pointer-events:none; position:absolute; top:max(12px, env(safe-area-inset-top)); right:12px; z-index:30; display:flex; gap:8px; }
+    .icon-btn { pointer-events:auto; width:44px; height:44px; border-radius:12px; border:1px solid rgba(243,234,216,.2); background:rgba(18,16,12,.55); color:var(--paper); display:flex; align-items:center; justify-content:center; }
+    .overlay { position:absolute; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(18,16,12,.55); backdrop-filter:blur(2px); }
+    .overlay[hidden], .hud[hidden], .touch[hidden] { display:none !important; }
+    .card { width:100%; max-width:32rem; border-radius:24px; background:var(--paper); color:var(--ink); padding:22px 22px 18px; box-shadow:0 24px 60px rgba(0,0,0,.45); }
+    .kicker { font-family: "Oswald", ui-sans-serif, system-ui, sans-serif; font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--masthead); margin:0; }
+    .rule { height:1px; background:var(--ink); margin:8px 0 0; }
+    h1 { font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:clamp(2.8rem, 10vw, 3.75rem); line-height:.95; letter-spacing:-.02em; margin:12px 0 0; font-weight:700; }
+    h1 span { display:block; color:var(--masthead); }
+    .lede { margin:12px 0 0; font-size:15px; line-height:1.5; color:var(--muted); }
+    .stats { margin-top:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; border-radius:16px; background:rgba(229,217,192,.8); padding:12px; text-align:center; }
+    .stat kbd { display:block; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-style:normal; }
+    .stat b { display:block; margin-top:4px; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:1.15rem; font-weight:600; }
+    .actions { margin-top:22px; display:flex; flex-direction:column; gap:10px; }
+    .actions-row { display:flex; gap:10px; }
+    .play-row { display:flex; align-items:center; gap:12px; }
+    .play-row .play { flex:1; width:auto; }
+    .record-check { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); white-space:nowrap; }
+    .record-check input { width:20px; height:20px; accent-color:var(--masthead); flex-shrink:0; }
+    @media (max-width:639px) { .actions-row { flex-direction:column; } }
+    @media (max-width:420px) { .play-row { flex-wrap:wrap; } .record-check { width:100%; justify-content:center; } }
+    button.play, button.ink, button.file { font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; letter-spacing:.06em; text-transform:uppercase; border:0; border-radius:12px; height:48px; padding:0 28px; font-size:1rem; cursor:pointer; }
+    button.play { flex:1; background:var(--masthead); color:var(--paper); width:100%; }
+    button.play:active { transform:translateY(1px); }
+    button.ink { min-width:10rem; background:#1c1914; color:var(--paper); border:1px solid rgba(243,234,216,.15); }
+    button.store { width:100%; background:#d4a017; color:#12100c; }
+    .hint { margin:16px 0 0; text-align:center; font-size:12px; color:var(--muted); }
+    .hud { pointer-events:none; position:absolute; left:0; right:0; top:0; z-index:15; padding:12px 12px 0; padding-top:max(12px, env(safe-area-inset-top)); }
+    .hud-score { display:inline-block; border-radius:16px; border:1px solid rgba(243,234,216,.15); background:rgba(18,16,12,.55); padding:8px 12px; backdrop-filter:blur(6px); }
+    .hud-score .lbl { font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(243,234,216,.6); }
+    .hud-score .val { font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:1.85rem; line-height:1; }
+    .hud-meta { margin-top:4px; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:rgba(243,234,216,.7); }
+    .deadline { margin-top:12px; max-width:20rem; display:flex; gap:12px; align-items:center; }
+    .deadline .bar { flex:1; height:8px; border-radius:99px; background:rgba(18,16,12,.6); overflow:hidden; }
+    .deadline .bar > i { display:block; height:100%; background:var(--paper); border-radius:99px; width:0%; }
+    .deadline .bar.front > i { background:var(--masthead); }
+    .mult { border-radius:10px; background:rgba(18,16,12,.6); padding:4px 10px; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; }
+    .touch { position:absolute; left:0; right:0; bottom:0; z-index:16; display:flex; justify-content:space-between; align-items:flex-end; gap:10px; padding:12px; padding-bottom:max(12px, env(safe-area-inset-bottom)); }
+    .touch button { height:64px; min-width:5.5rem; border-radius:16px; border:1px solid rgba(243,234,216,.2); background:rgba(18,16,12,.55); color:var(--paper); font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; letter-spacing:.08em; text-transform:uppercase; }
+    .touch .jump { flex: 0 0 42%; background:var(--masthead); border:0; }
+    .touch .throw { flex:none; width:132px; height:80px; min-width:0; padding:0; border:0; background:transparent; border-radius:0; }
+    .touch .throw svg { width:132px; height:80px; display:block; filter:drop-shadow(0 8px 12px rgba(0,0,0,.5)); }
+    .touch .throw:active svg { transform:translate(2px,3px) rotate(6deg); transform-origin:30% 70%; }
+    @media (min-width:900px) { .touch { display:none; } }
+    .jet-fab { position:absolute; right:14px; bottom:88px; z-index:17; min-width:7.5rem; height:56px; border:0; border-radius:16px; background:#1a6dff; color:#fff; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; letter-spacing:.1em; text-transform:uppercase; box-shadow:0 8px 24px rgba(26,109,255,.45); }
+    .jet-fab[hidden] { display:none !important; }
+    .store-card { max-width:42rem; padding:0; display:flex; flex-direction:column; max-height:min(760px,100dvh - 1.5rem); }
+    .store-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px 16px; overflow:auto; }
+    @media (max-width:560px) { .store-grid { grid-template-columns:1fr; } }
+    .obs { display:flex; gap:10px; align-items:center; background:rgba(229,217,192,.55); border-radius:14px; padding:10px; }
+    .obs img { width:64px; height:64px; object-fit:contain; flex-shrink:0; }
+    .obs h3 { margin:0; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; font-size:15px; letter-spacing:.04em; text-transform:uppercase; }
+    .obs p { margin:4px 0 0; font-size:12px; line-height:1.35; color:var(--muted); }
+    .obs b { display:block; margin-top:4px; font-family:"Oswald", sans-serif; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--masthead); }
+    input.name { margin-top:8px; width:100%; height:44px; border-radius:10px; border:1px solid rgba(18,16,12,.15); background:#fff; padding:0 12px; font:inherit; font-size:16px; }
+    .board-list { max-height:min(420px, 50dvh); overflow:auto; }
+    .board-row { display:grid; grid-template-columns:2rem 1.75rem 1fr auto; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; font-family:"Oswald", ui-sans-serif, system-ui, sans-serif; }
+    .board-row:nth-child(even) { background:rgba(229,217,192,.5); }
+    .err { color:var(--masthead); font-size:14px; margin-top:8px; }
+    .flag { width:20px; height:14px; object-fit:cover; }
+    .rec-pill { position:absolute; top:max(12px, env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:18; pointer-events:none; background:#c41e3a; color:#fff; font-family:"Oswald", sans-serif; letter-spacing:.18em; font-size:11px; padding:4px 10px; border-radius:99px; }
+    .rec-pill[hidden] { display:none !important; }
+    .rec-pill i { display:inline-block; width:8px; height:8px; border-radius:50%; background:#fff; margin-right:6px; animation: recblink 1s steps(1) infinite; }
+    @keyframes recblink { 50% { opacity:0; } }
+    #tape-video { width:100%; max-height:min(52dvh, 420px); border-radius:12px; background:#111; }
+  </style>
 </head>
-<body>
-  <div id="app">
-    <header class="masthead">
-      <div class="kicker">CITY DESK · LIVE</div>
-      <h1>SCOOP RUNNER</h1>
-      <p class="tag">Chase the story. Beat the deadline.</p>
-    </header>
-    <canvas id="game" width="390" height="640" aria-label="Scoop Runner game"></canvas>
-    <div id="hud">
-      <span id="score">SCOOPS 0</span>
-      <span id="best">BEST 0</span>
+<body style="margin:0;background:#12100c;color:#f3ead8">
+  <div id="game">
+    <canvas id="stage"></canvas>
+    <div class="top-right">
+      <button class="icon-btn" id="btn-mute" aria-label="Mute">🔊</button>
+      <button class="icon-btn" id="btn-pause" aria-label="Pause" hidden>⏸</button>
     </div>
-    <div id="overlay" class="overlay">
-      <h2 id="overlayTitle">SCOOP RUNNER</h2>
-      <p id="overlayCopy">Tap or press space to jump. Collect scoops. Dodge lawsuits, fake news, and deadlines.</p>
-      <button id="startBtn" type="button">FILE THE STORY</button>
+    <div class="hud" id="hud" hidden>
+      <div class="hud-score">
+        <div class="lbl">Score</div>
+        <div class="val" id="hud-score">0</div>
+        <div class="hud-meta"><span id="hud-season">Sunny Edition</span> / <span id="hud-dist">0</span> m</div>
+      </div>
+      <div class="deadline">
+        <div style="flex:1">
+          <div class="lbl" style="font-family:Oswald,sans-serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(243,234,216,.7);display:flex;justify-content:space-between">
+            <span>Deadline</span><span id="hud-front" hidden style="color:#c41e3a">Front page</span>
+          </div>
+          <div class="bar" id="hud-bar"><i id="hud-bar-i"></i></div>
+        </div>
+        <div class="mult" id="hud-mult">x1.0</div>
+        <div class="mult" id="hud-papers-wrap" title="Newspapers">📰 <span id="hud-papers">3</span></div>
+      </div>
+    </div>
+    <div class="rec-pill" id="rec-pill" hidden><i></i>REC</div>
+    <div class="touch" id="touch" hidden>
+      <button type="button" class="throw" id="btn-throw" aria-label="Scoop-x">
+        <svg viewBox="0 0 160 96" aria-hidden="true">
+          <path fill="#1a1612" d="M34 46l6 42h26l4-42z"/>
+          <path fill="#c41e3a" d="M38 50l5 34h16l3-34z"/>
+          <path fill="#d4a017" stroke="#12100c" stroke-width="3" stroke-linejoin="round" d="M18 30h34l6-12h86c8 0 12 5 12 12v16c0 8-5 12-12 12H86v8H70c2 10 10 22 2 30-6 6-16 2-20-8l-8-30H28l-14 8-6-12 16-10H18c-6 0-8-6-8-10s3-8 8-8z"/>
+          <rect x="58" y="24" width="78" height="10" rx="3" fill="#f3ead8" opacity=".35"/>
+          <circle cx="148" cy="36" r="5" fill="#12100c"/>
+          <path fill="none" stroke="#12100c" stroke-width="3" d="M70 50c10 2 16 16 8 26"/>
+          <circle cx="76" cy="62" r="5" fill="none" stroke="#12100c" stroke-width="2.5"/>
+        </svg>
+      </button>
+      <button type="button" class="jump" id="btn-jump">Jump</button>
+    </div>
+    <button type="button" class="jet-fab" id="btn-jet" hidden>Jetpack</button>
+
+    <div class="overlay" id="screen-title">
+      <section class="card">
+        <p class="kicker">The Daily Exclusive</p>
+        <div class="rule"></div>
+        <h1>SCOOP<span>RUNNER</span></h1>
+        <p class="lede">You are the city desk's last honest reporter. Sprint the skyline, grab the exclusive, and file it before the competition does.</p>
+        <div class="stats">
+          <div class="stat"><kbd>Best file</kbd><b id="stat-best">0</b></div>
+          <div class="stat"><kbd>Stories</kbd><b id="stat-stories">0</b></div>
+          <div class="stat"><kbd>Desk</kbd><b id="stat-desk">—</b></div>
+        </div>
+        <div class="actions">
+          <div class="play-row">
+            <button class="play" id="btn-play" type="button">Play</button>
+            <label class="record-check" for="chk-record">
+              <input type="checkbox" id="chk-record" />
+              Record my game
+            </label>
+          </div>
+          <button class="play store" id="btn-store" type="button">Know about obstacles</button>
+          <div class="actions-row">
+            <button class="ink" id="btn-board" type="button" style="flex:1">🏆 Scoreboard</button>
+          </div>
+        </div>
+        <p class="hint">Jump: Space / W · Slide: Down / S · Scoop-x: gun / F / J · Jetpack: G</p>
+      </section>
+    </div>
+
+    <div class="overlay" id="screen-store" hidden>
+      <section class="card store-card">
+        <header style="padding:18px 22px;border-bottom:1px solid rgba(18,16,12,.1)">
+          <p class="kicker">City desk briefing</p>
+          <h1 style="font-size:2rem">Know about obstacles</h1>
+          <p class="lede">Every character on your beat. Learn the dodge, then chase the story.</p>
+        </header>
+        <div class="store-grid" id="store-grid"></div>
+        <footer style="display:flex;gap:8px;padding:16px;border-top:1px solid rgba(18,16,12,.1)">
+          <button class="play" id="btn-store-play" type="button" style="flex:1">Play</button>
+          <button class="ink" id="btn-store-back" type="button">Desk</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="overlay" id="screen-pause" hidden>
+      <div class="card" style="max-width:24rem">
+        <h1 style="font-size:2rem">Hold the presses</h1>
+        <p class="lede">The city keeps moving the second you resume.</p>
+        <div class="actions">
+          <button class="play" id="btn-resume" type="button">Resume</button>
+          <button class="ink" id="btn-quit" type="button">Desk</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="screen-byline" hidden>
+      <form class="card" id="form-byline" style="max-width:28rem">
+        <p class="kicker">Killed the story</p>
+        <h1 style="font-size:2.2rem">File your byline</h1>
+        <div class="stats">
+          <div class="stat"><kbd>Score</kbd><b id="over-score">0</b></div>
+          <div class="stat"><kbd>Scoops</kbd><b id="over-stories">0</b></div>
+          <div class="stat"><kbd>Run</kbd><b id="over-dist">0 m</b></div>
+        </div>
+        <p class="kicker" id="over-record" hidden style="margin-top:12px">New desk record</p>
+        <label class="kicker" style="display:block;margin-top:18px;color:var(--muted)">Name
+          <input class="name" id="byline-name" maxlength="16" autocomplete="nickname" placeholder="City desk alias" />
+        </label>
+        <p class="err" id="byline-err" hidden></p>
+        <button class="play file" id="btn-file" type="submit" style="width:100%;margin-top:18px">File to the global desk</button>
+      </form>
+    </div>
+
+    <div class="overlay" id="screen-replay" hidden style="z-index:25">
+      <section class="card" style="max-width:28rem">
+        <p class="kicker">Tape in the can</p>
+        <h1 style="font-size:2rem">Watch your replay?</h1>
+        <p class="lede">This run is saved on your phone. Play it back now, or file your byline first.</p>
+        <div class="actions">
+          <button class="play" id="btn-watch" type="button">Watch replay</button>
+          <button class="ink" id="btn-skip-replay" type="button">Not now</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay" id="screen-tape" hidden style="z-index:26">
+      <section class="card" style="max-width:40rem">
+        <p class="kicker">City desk tape</p>
+        <h1 style="font-size:1.8rem;margin-bottom:12px">Your run</h1>
+        <video id="tape-video" controls playsinline webkit-playsinline></video>
+        <div class="actions" style="margin-top:14px">
+          <a class="play" id="btn-save-tape" href="#" download="scoop-runner.webm" style="text-align:center;text-decoration:none;line-height:48px">Save to phone</a>
+          <button class="ink" id="btn-tape-done" type="button">Continue</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay" id="screen-board" hidden>
+      <section class="card" style="max-width:36rem;padding:0;display:flex;flex-direction:column;max-height:min(720px,100dvh - 1.5rem)">
+        <header style="padding:18px 22px;border-bottom:1px solid rgba(18,16,12,.1)">
+          <p class="kicker">Worldwide desk</p>
+          <h1 style="font-size:2rem">Global Scoreboard</h1>
+          <p class="lede">Filed from the field, flagged by country.</p>
+        </header>
+        <div class="board-list" id="board-list"></div>
+        <footer style="display:flex;gap:8px;padding:16px;border-top:1px solid rgba(18,16,12,.1)">
+          <button class="play" id="btn-run-again" type="button" style="flex:1">Run again</button>
+          <button class="ink" id="btn-desk" type="button">Desk</button>
+        </footer>
+      </section>
     </div>
   </div>
-  <script src="game.js"></script>
+  <script>
+    (function () {
+      var TZ = {"Africa/Cairo":"EG","Africa/Casablanca":"MA","Africa/Johannesburg":"ZA","Africa/Lagos":"NG","Africa/Nairobi":"KE","America/Anchorage":"US","America/Argentina/Buenos_Aires":"AR","America/Bogota":"CO","America/Caracas":"VE","America/Chicago":"US","America/Denver":"US","America/Edmonton":"CA","America/Halifax":"CA","America/Lima":"PE","America/Los_Angeles":"US","America/Mexico_City":"MX","America/New_York":"US","America/Phoenix":"US","America/Santiago":"CL","America/Sao_Paulo":"BR","America/Toronto":"CA","America/Vancouver":"CA","Asia/Baghdad":"IQ","Asia/Bangkok":"TH","Asia/Calcutta":"IN","Asia/Colombo":"LK","Asia/Dhaka":"BD","Asia/Dubai":"AE","Asia/Ho_Chi_Minh":"VN","Asia/Hong_Kong":"HK","Asia/Jakarta":"ID","Asia/Jerusalem":"IL","Asia/Karachi":"PK","Asia/Kolkata":"IN","Asia/Kuala_Lumpur":"MY","Asia/Manila":"PH","Asia/Riyadh":"SA","Asia/Seoul":"KR","Asia/Shanghai":"CN","Asia/Singapore":"SG","Asia/Taipei":"TW","Asia/Tehran":"IR","Asia/Tokyo":"JP","Australia/Adelaide":"AU","Australia/Brisbane":"AU","Australia/Melbourne":"AU","Australia/Perth":"AU","Australia/Sydney":"AU","Europe/Amsterdam":"NL","Europe/Athens":"GR","Europe/Berlin":"DE","Europe/Brussels":"BE","Europe/Bucharest":"RO","Europe/Budapest":"HU","Europe/Copenhagen":"DK","Europe/Dublin":"IE","Europe/Helsinki":"FI","Europe/Istanbul":"TR","Europe/Kiev":"UA","Europe/Kyiv":"UA","Europe/Lisbon":"PT","Europe/London":"GB","Europe/Madrid":"ES","Europe/Moscow":"RU","Europe/Oslo":"NO","Europe/Paris":"FR","Europe/Prague":"CZ","Europe/Rome":"IT","Europe/Stockholm":"SE","Europe/Vienna":"AT","Europe/Warsaw":"PL","Europe/Zurich":"CH","Pacific/Auckland":"NZ","Pacific/Honolulu":"US"};
+      var desk = document.getElementById("stat-desk");
+      function setCountry(code) {
+        if (!code) return;
+        code = String(code).toUpperCase();
+        if (!/^[A-Z]{2}$/.test(code) || code === "UN" || code === "XX") return;
+        var cur = window.__scoopCountry;
+        if (cur && cur !== "UN" && code === "US" && cur !== "US") return;
+        window.__scoopCountry = code;
+        if (desk) desk.innerHTML = '<img class="flag" alt="" src="https://flagcdn.com/w40/' + code.toLowerCase() + '.png"> ' + code;
+      }
+      try {
+        var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        var c = TZ[tz];
+        if (!c && tz.indexOf("Australia/") === 0) c = "AU";
+        if (!c && (tz === "Asia/Kolkata" || tz === "Asia/Calcutta")) c = "IN";
+        setCountry(c);
+      } catch (e) {}
+    })();
+  </script>
+  <script src="scoop-game.js?v=11" defer></script>
+  <script>
+    window.addEventListener("error", function () {
+      var play = document.getElementById("btn-play");
+      if (play) play.removeAttribute("disabled");
+    });
+  </script>
 </body>
 </html>

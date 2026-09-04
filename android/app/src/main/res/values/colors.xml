@@ -1,4 +1,6 @@
 <resources>
-    <color name="ink">#0B0D10</color>
-    <color name="amber">#F5B942</color>
+    <color name="ink">#12100C</color>
+    <color name="amber">#D4A017</color>
+    <color name="masthead">#C41E3A</color>
+    <color name="paper">#F3EAD8</color>
 </resources>
