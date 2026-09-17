@@ -1,13 +1,11 @@
-plugins {
-    id 'com.android.application'
-}
+plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.sashikanthmeduri.scooprunner'
+    namespace 'com.sashikanth.scooprunner'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.sashikanthmeduri.scooprunner"
+        applicationId "com.sashikanth.scooprunner"
         minSdk 24
         targetSdk 35
         versionCode 2
