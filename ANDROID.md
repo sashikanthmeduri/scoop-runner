@@ -8,5 +8,5 @@ bash scripts/sync-native-www.sh
 
 Then open the `android/` folder in Android Studio and generate a signed **Android App Bundle** (`.aab`).
 
-- applicationId: `com.sashikanthmeduri.scooprunner`
+- applicationId: `com.sashikanth.scooprunner`
 - minSdk 24 / targetSdk 35 / version 1.1.0 (2)

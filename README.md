@@ -9,11 +9,16 @@ npm install
 npm run dev
 ```
 
-Hit **Play**. Check **Record my game** to tape a run. Touch: gun = Scoop-x, Jump on the right. Keyboard: Space jump, Down slide, F/J Scoop-x, G jetpack.
+Hit **Play**. Check **Record my game** to tape a run.
+
+Touch: gun = Scoop-x, Jump on the right.
+Keyboard: Space jump, Down slide, F/J Scoop-x, G jetpack.
 
 ## Ship to Play Store / App Store
 
-See **[STORE.md](STORE.md)**. Short version:
+See **[STORE.md](STORE.md)**.
+
+Short version:
 
 ```bash
 bash scripts/sync-native-www.sh
@@ -22,8 +27,8 @@ python3 scripts/generate-store-icons.py
 
 - Android: open `android/` in Android Studio → signed **.aab**
 - iOS: open `ios/ScoopRunner.xcodeproj` on a Mac → Archive
-
-App id: `com.sashikanthmeduri.scooprunner`
+- Android/Google Play application id: `com.sashikanth.scooprunner`
+- iOS App Store bundle id: `com.sashikanthmeduri.scooprunner`
 
 ## Privacy
 
